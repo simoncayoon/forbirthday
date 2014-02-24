@@ -1,6 +1,7 @@
 package com.loseshoe.forbirthday.view;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -14,11 +15,10 @@ public class ZoomImageView extends View {
 
 	@Override  
     public boolean onTouchEvent(MotionEvent event) {  
-//        if (initRatio == totalRatio) {  
-//            getParent().requestDisallowInterceptTouchEvent(false);  
-//        } else {  
-//            getParent().requestDisallowInterceptTouchEvent(true);  
-//        }  
+
+		
         return true;  
-    }  
+    }
+
+	
 }
