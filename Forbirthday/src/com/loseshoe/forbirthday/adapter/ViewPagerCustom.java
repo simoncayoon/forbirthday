@@ -51,7 +51,6 @@ public class ViewPagerCustom extends PagerAdapter {
 		// TODO Auto-generated method stub
 		
 		//首先查询列表中的图片
-
 		view = (ImageView)LayoutInflater.from(ctx).inflate(R.layout.pic_zoom_layout, null);
 		Bitmap bitmap = mImageLoader.getBitmapFromMemoryCache(setImageSrc().get(position));
 		view.setImageBitmap(bitmap);
@@ -92,5 +91,15 @@ public class ViewPagerCustom extends PagerAdapter {
 		bitmapNameList.add(ctx.getResources().getResourceName(R.drawable.p8));
 		
 		return bitmapNameList;
+	}
+	
+	/**
+	 * 获取资源图片的名称（以后用于文件）
+	 * @param srcID 资源ID
+	 * @return 返回资源的名称
+	 */
+	public String getFileName(int srcID){
+		String fileName = ctx.getResources().getResourceName(srcID);
+		return fileName;
 	}
 }

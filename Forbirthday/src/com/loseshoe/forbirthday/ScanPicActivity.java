@@ -19,11 +19,10 @@ public class ScanPicActivity extends Activity implements OnPageChangeListener{
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		setContentView(R.layout.scan_pic_view);
 		
-		int imagePosition = getIntent().getIntExtra("image_position", 0);
         mViewPager= (ViewPager) findViewById(R.id.view_pager);  
         ViewPagerCustom adapter = new ViewPagerCustom(ScanPicActivity.this);  
         mViewPager.setAdapter(adapter);  
-        mViewPager.setCurrentItem(imagePosition);  
+        mViewPager.setCurrentItem(0);  
         mViewPager.setOnPageChangeListener(this);
 	}
 
