@@ -1,11 +1,12 @@
 package com.loseshoe.forbirthday.adapter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.v4.view.PagerAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,6 +14,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.loseshoe.forbirthday.R;
+import com.loseshoe.forbirthday.util.DebugFlags;
+import com.loseshoe.forbirthday.util.FileManager;
 import com.loseshoe.forbirthday.util.ImageLoader;
 
 public class ViewPagerCustom extends PagerAdapter {
@@ -20,16 +23,18 @@ public class ViewPagerCustom extends PagerAdapter {
 	private Context ctx;
 	private ImageLoader mImageLoader;
 	private ImageView view;
+	private FileManager mFileManager;
 	
 	public ViewPagerCustom(Context ctx){
 		this.ctx = ctx;
 		mImageLoader = ImageLoader.getInstance();
+		mFileManager = FileManager.getInstance();
 	}
 
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
-		return setImageSrc().size();
+		return mFileManager.getFileCount();
 	}
 
 	@Override
@@ -49,57 +54,61 @@ public class ViewPagerCustom extends PagerAdapter {
 	@Override
 	public Object instantiateItem(ViewGroup container, int position) {
 		// TODO Auto-generated method stub
-		
-		//首先查询列表中的图片
 		view = (ImageView)LayoutInflater.from(ctx).inflate(R.layout.pic_zoom_layout, null);
-		Bitmap bitmap = mImageLoader.getBitmapFromMemoryCache(setImageSrc().get(position));
-		view.setImageBitmap(bitmap);
-		container.addView(view);
+		Bitmap bmp = null;
+		/*
+		 * 1、首先查询是否在缓存里面
+		 * 2、查找文件
+		 */
+		
+		String[] index;
+		try {
+			index = mFileManager.getIndex();
+			if(index.length > 0){
+				//查询是否存在缓存中
+				bmp = mImageLoader.getBitmapFromMemoryCache(index[position]);
+				if(bmp == null){
+					GetPicTask task = new GetPicTask();
+					task.execute(index[position]);
+					try {
+						bmp = task.get();
+						view.setImageBitmap(bmp);
+						container.addView(view);
+						
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (ExecutionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}else{
+				DebugFlags.logD("没有图片，请添加图片");
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return view;
 	}
-
-	/**
-	 * 设置图片源
-	 * @return bitmap列表
-	 */
-	private List<String> setImageSrc(){
-		List<String> bitmapNameList = new ArrayList<String>();
-		//first
-		Bitmap firmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.p1);
-		mImageLoader.addBitmapToMemoryCache(ctx.getResources().getResourceName(R.drawable.p1), firmap);
-		bitmapNameList.add(ctx.getResources().getResourceName(R.drawable.p1));
-		Bitmap secmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.p2);
-		mImageLoader.addBitmapToMemoryCache(ctx.getResources().getResourceName(R.drawable.p2), secmap);
-		bitmapNameList.add(ctx.getResources().getResourceName(R.drawable.p2));
-		Bitmap thirmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.p3);
-		mImageLoader.addBitmapToMemoryCache(ctx.getResources().getResourceName(R.drawable.p3), thirmap);
-		bitmapNameList.add(ctx.getResources().getResourceName(R.drawable.p3));
-		Bitmap fourmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.p4);
-		mImageLoader.addBitmapToMemoryCache(ctx.getResources().getResourceName(R.drawable.p4), fourmap);
-		bitmapNameList.add(ctx.getResources().getResourceName(R.drawable.p4));
-		Bitmap fifmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.p5);
-		mImageLoader.addBitmapToMemoryCache(ctx.getResources().getResourceName(R.drawable.p5), fifmap);
-		bitmapNameList.add(ctx.getResources().getResourceName(R.drawable.p5));
-		Bitmap sixmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.p6);
-		mImageLoader.addBitmapToMemoryCache(ctx.getResources().getResourceName(R.drawable.p6), sixmap);
-		bitmapNameList.add(ctx.getResources().getResourceName(R.drawable.p6));
-		Bitmap sevmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.p7);
-		mImageLoader.addBitmapToMemoryCache(ctx.getResources().getResourceName(R.drawable.p7), sevmap);
-		bitmapNameList.add(ctx.getResources().getResourceName(R.drawable.p7));
-		Bitmap eightmap = BitmapFactory.decodeResource(ctx.getResources(), R.drawable.p8);
-		mImageLoader.addBitmapToMemoryCache(ctx.getResources().getResourceName(R.drawable.p8), eightmap);
-		bitmapNameList.add(ctx.getResources().getResourceName(R.drawable.p8));
-		
-		return bitmapNameList;
-	}
 	
-	/**
-	 * 获取资源图片的名称（以后用于文件）
-	 * @param srcID 资源ID
-	 * @return 返回资源的名称
-	 */
-	public String getFileName(int srcID){
-		String fileName = ctx.getResources().getResourceName(srcID);
-		return fileName;
+	class GetPicTask extends AsyncTask<String, Integer, Bitmap>{
+
+		@Override
+		protected Bitmap doInBackground(String... params) {
+			// TODO Auto-generated method stub
+			String imageName = params[0];
+			Bitmap bmp = null;
+			try {
+				bmp = mFileManager.getPic(imageName);
+				mImageLoader.addBitmapToMemoryCache(imageName, bmp);
+				return bmp;
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+		}		
 	}
 }

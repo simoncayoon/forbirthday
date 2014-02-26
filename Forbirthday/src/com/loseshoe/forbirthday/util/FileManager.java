@@ -25,22 +25,29 @@ public class FileManager {
 	private FileManager() {
 		String sdPath = getSdCardPath();
 		DebugFlags.logD("the sdPath: " + sdPath);
-		if (mFile == null && hasSDCard()) {
-			mFile = new File(sdPath + filePath);
-			if (!mFile.exists())
-				mFile.mkdirs();
-			String indexPath = mFile.getAbsolutePath() + "index";
-			indexFile = new File(indexPath);
-			if (!indexFile.exists())
-				try {
-					indexFile.createNewFile();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		} else {
-			return;
+
+		mFile = new File(sdPath + filePath);
+		// 如果没有就创建这样一个文件夹
+		if (!mFile.exists()){
+			if(mFile.mkdir())
+				DebugFlags.logD("create success");
+			else{
+				DebugFlags.logD("create failed");
+			}
 		}
+		String indexPath = mFile.getAbsolutePath() + "/index";
+		indexFile = new File(indexPath);
+		if (!indexFile.exists())
+			try {
+				indexFile.createNewFile();
+				// 如果文件夹有文件，初始化索引列表
+				if (mFile.list().length > 1) {
+					setIndex(mFile.list());
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 
 	public static FileManager getInstance() {
@@ -55,10 +62,10 @@ public class FileManager {
 	 * 
 	 * @return 有SD卡返回true，没有返回false。
 	 */
-	private static boolean hasSDCard() {
-		return Environment.MEDIA_MOUNTED.equals(Environment
-				.getExternalStorageState());
-	}
+//	private static boolean hasSDCard() {
+//		return Environment.MEDIA_MOUNTED.equals(Environment
+//				.getExternalStorageState());
+//	}
 
 	private String getSdCardPath() {
 		return Environment.getExternalStorageDirectory().getPath();
@@ -66,7 +73,8 @@ public class FileManager {
 
 	/**
 	 * 操作排序文件
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	public String[] getIndex() throws IOException {
 		// 读取文件的内容
@@ -76,16 +84,16 @@ public class FileManager {
 			InputStreamReader isr = new InputStreamReader(fis);
 			BufferedReader br = new BufferedReader(isr);
 			StringBuilder sb = new StringBuilder();
-			
+
 			try {
-				while(br.readLine() != null){
+				while (br.readLine() != null) {
 					sb.append(br.readLine());
 				}
-				
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}finally{
+			} finally {
 				fis.close();
 				isr.close();
 				br.close();
@@ -115,11 +123,11 @@ public class FileManager {
 			OutputStreamWriter osw = new OutputStreamWriter(fos);
 			try {
 				osw.write(content, 0, content.length());
-				
+
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}finally{
+			} finally {
 				osw.flush();
 				fos = null;
 				osw.close();
@@ -131,28 +139,29 @@ public class FileManager {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * 根据索引文件名称查找图片
-	 * @throws FileNotFoundException 
+	 * 
+	 * @throws FileNotFoundException
 	 */
-	public Bitmap getPic(String imageUrl) throws FileNotFoundException{
+	public Bitmap getPic(String imageUrl) throws FileNotFoundException {
 		File picFile = new File(getSdCardPath() + filePath + imageUrl);
 		Bitmap pic = null;
-		if(picFile.exists()){
+		if (picFile.exists()) {
 			FileInputStream fis = new FileInputStream(picFile);
 			pic = BitmapFactory.decodeStream(fis);
 		}
 		return pic;
 	}
-	
+
 	/**
 	 * 保存图片
 	 */
-	public void savePic(Bitmap srcPic, String imageName){
+	public void savePic(Bitmap srcPic, String imageName) {
 		File picFile = new File(getSdCardPath() + filePath + imageName);
-		if(picFile.exists()){
-			//图片存在，覆盖
+		if (picFile.exists()) {
+			// 图片存在，覆盖
 			try {
 				FileOutputStream fos = new FileOutputStream(picFile, false);
 				srcPic.compress(Bitmap.CompressFormat.JPEG, 100, fos);
@@ -162,30 +171,43 @@ public class FileManager {
 			}
 		}
 	}
-	
+
 	/**
 	 * MD5判断两文件是否被修改
 	 */
-	static class MD5{
+	static class MD5 {
 		static private byte[] param1 = null;
 		static private byte[] param2 = null;
-		public static boolean equal(byte[] arg1, byte[] arg2){
+
+		public static boolean equal(byte[] arg1, byte[] arg2) {
 			try {
 				MessageDigest md5 = MessageDigest.getInstance("MD5");
 				md5.update(arg1);
 				param1 = md5.digest();
 				md5.update(arg2);
 				param2 = md5.digest();
-				
+
 			} catch (NoSuchAlgorithmException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			if(param1.equals(param2)){
+			if (param1.equals(param2)) {
 				return true;
-			}else{
+			} else {
 				return false;
 			}
 		}
-	} 
+	}
+
+	/**
+	 * 获取文件目录
+	 */
+	public int getFileCount() {
+		
+		if(mFile.list() != null)
+			return mFile.list().length;
+		else{
+			return 0;
+		}
+	}
 }
