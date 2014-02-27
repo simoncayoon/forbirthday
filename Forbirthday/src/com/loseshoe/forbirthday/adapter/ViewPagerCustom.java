@@ -24,44 +24,48 @@ public class ViewPagerCustom extends PagerAdapter {
 	private ImageLoader mImageLoader;
 	private ImageView view;
 	private FileManager mFileManager;
+	private Bitmap bmp = null;
 	
 	public ViewPagerCustom(Context ctx){
 		this.ctx = ctx;
 		mImageLoader = ImageLoader.getInstance();
 		mFileManager = FileManager.getInstance();
+		DebugFlags.logD("++++++++++++++++");
 	}
 
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
+		DebugFlags.logD("getcount");
 		return mFileManager.getFileCount();
 	}
 
 	@Override
 	public boolean isViewFromObject(View arg0, Object arg1) {
 		// TODO Auto-generated method stub
+		DebugFlags.logD("isViewFromObject");
 		return arg0 == arg1;
 	}
 	
 	@Override
 	public void destroyItem(ViewGroup container, int position, Object object) {
 		// TODO Auto-generated method stub
-		super.destroyItem(container, position, object);
 		View view = (View) object;
+		DebugFlags.logD("destroyItem");
 		container.removeView(view);
 	}
 	
 	@Override
 	public Object instantiateItem(ViewGroup container, int position) {
 		// TODO Auto-generated method stub
-		view = (ImageView)LayoutInflater.from(ctx).inflate(R.layout.pic_zoom_layout, null);
-		Bitmap bmp = null;
+		DebugFlags.logD("instantiateItem");
+		ImageView view = (ImageView)LayoutInflater.from(ctx).inflate(R.layout.pic_zoom_layout, null);
+		
+		String[] index;
 		/*
 		 * 1、首先查询是否在缓存里面
 		 * 2、查找文件
 		 */
-		
-		String[] index;
 		try {
 			index = mFileManager.getIndex();
 			if(index.length > 0){
@@ -70,6 +74,7 @@ public class ViewPagerCustom extends PagerAdapter {
 				if(bmp == null){
 					GetPicTask task = new GetPicTask();
 					task.execute(index[position]);
+					
 					try {
 						bmp = task.get();
 						view.setImageBitmap(bmp);
@@ -82,6 +87,7 @@ public class ViewPagerCustom extends PagerAdapter {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+					bmp.recycle();
 				}
 			}else{
 				DebugFlags.logD("没有图片，请添加图片");

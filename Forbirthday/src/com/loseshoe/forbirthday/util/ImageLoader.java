@@ -1,6 +1,5 @@
 package com.loseshoe.forbirthday.util;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.util.LruCache;
@@ -26,10 +25,10 @@ public class ImageLoader {
 		DebugFlags.logD("the usable memery is " + cacheSize);
 		//设置图片缓存大小为程序最大可用内存的1/8
 		mMemoryCache = new LruCache<String, Bitmap>(cacheSize){
-			@SuppressLint("NewApi")
+			
 			@Override
 			protected int sizeOf(String key, Bitmap bitmap){
-				return bitmap.getByteCount();
+				return bitmap.getRowBytes() * bitmap.getHeight();
 			}
 		};
 		
