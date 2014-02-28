@@ -24,23 +24,25 @@ public class FileManager {
 	private File mFile;
 	private File indexFile;
 	private static final String filePath = "/.forbirthday";
+	private static final String SD_Path = Environment
+			.getExternalStorageDirectory().getPath();;
 
 	private FileManager() {
-		String sdPath = getSdCardPath();
+		String sdPath = SD_Path;
 		DebugFlags.logD("the sdPath: " + sdPath);
 
 		mFile = new File(sdPath + filePath);
 		// 如果没有就创建这样一个文件夹
-		if (!mFile.exists()){
-			if(mFile.mkdir())
+		if (!mFile.exists()) {
+			if (mFile.mkdir())
 				DebugFlags.logD("create success");
-			else{
+			else {
 				DebugFlags.logD("create failed");
 			}
 		}
 		String indexPath = mFile.getAbsolutePath() + "/.index";
 		indexFile = new File(indexPath);
-		if (!indexFile.exists()){
+		if (!indexFile.exists()) {
 			try {
 				indexFile.createNewFile();
 				// 如果文件夹有文件，初始化索引列表
@@ -49,8 +51,8 @@ public class FileManager {
 				e.printStackTrace();
 			}
 		}
-		
-		//这里只是初始化，应该只执行一次的
+
+		// 这里只是初始化，应该只执行一次的
 		if (mFile.list().length > 1) {
 			try {
 				setIndex(mFile.list());
@@ -73,14 +75,10 @@ public class FileManager {
 	 * 
 	 * @return 有SD卡返回true，没有返回false。
 	 */
-//	private static boolean hasSDCard() {
-//		return Environment.MEDIA_MOUNTED.equals(Environment
-//				.getExternalStorageState());
-//	}
-
-	private String getSdCardPath() {
-		return Environment.getExternalStorageDirectory().getPath();
-	}
+	// private static boolean hasSDCard() {
+	// return Environment.MEDIA_MOUNTED.equals(Environment
+	// .getExternalStorageState());
+	// }
 
 	/**
 	 * 操作排序文件
@@ -121,8 +119,8 @@ public class FileManager {
 	public boolean setIndex(String[] index) throws IOException {
 
 		List<String> indexList = new ArrayList<String>();
-		for(String item:index){
-			if(item.equals(".index"))
+		for (String item : index) {
+			if (item.equals(".index"))
 				continue;
 			else
 				indexList.add(item);
@@ -158,38 +156,76 @@ public class FileManager {
 			return false;
 		}
 	}
-
+	
 	/**
-	 * 根据索引文件名称查找图片
-	 * 
-	 * @throws FileNotFoundException
+	 * 根据需求解析图片
+	 * @param imageUrl
+	 * @param reqWidth
+	 * @param reqHeight
+	 * @return
 	 */
-	public Bitmap getPic(String imageUrl) throws FileNotFoundException {
-		String fileUrl = getSdCardPath() + filePath + "/" + imageUrl;
+	public static Bitmap decodeSampledBitmapFromResource(String imageUrl,
+			int reqWidth, int reqHeight) {
+		String fileUrl = SD_Path + filePath + "/" + imageUrl;
 		DebugFlags.logD("根据文件名，填充的全路径是： " + fileUrl);
+		// 第一次解析将inJustDecodeBounds设置为true，来获取图片大小
+		final BitmapFactory.Options options = new BitmapFactory.Options();
+		options.inJustDecodeBounds = true;
+		// 调用上面定义的方法计算inSampleSize值
+		options.inSampleSize = calculateInSampleSize(options, reqWidth,
+				reqHeight);
+		// 使用获取到的inSampleSize值再次解析图片
+		options.inJustDecodeBounds = false;
 		File picFile = new File(fileUrl);
-		Bitmap pic = null;
-		if (picFile.exists()) {
-			FileInputStream fis = new FileInputStream(picFile);
-			pic = BitmapFactory.decodeStream(fis);
+		FileInputStream fis = null;
+		Bitmap bitmap = null;
+		try {
+			fis = new FileInputStream(picFile);
+			bitmap = BitmapFactory.decodeStream(fis, null, options);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally{
+			try {
+				fis.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
-		return pic;
+		return bitmap;
+	}
+
+	public static int calculateInSampleSize(BitmapFactory.Options option,
+			int reqWidth, int reqHeight) {
+		// 原图片的宽度
+		final int width = option.outWidth;
+		final int height = option.outHeight;
+		int inSampleSize = 1;
+		if (width > reqWidth || height > reqHeight) {
+			// 计算出实际宽度和目标宽度的比率
+			final int widthRatio = Math
+					.round(((float) width / (float) reqWidth));
+			// 高度比率
+			final int heightRatio = Math.round((float) height
+					/ (float) reqHeight);
+			inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+		}
+		return inSampleSize;
 	}
 
 	/**
 	 * 保存图片
 	 */
 	public void savePic(Bitmap srcPic, String imageName) {
-		File picFile = new File(getSdCardPath() + filePath + imageName);
-		if (picFile.exists()) {
-			// 图片存在，覆盖
-			try {
-				FileOutputStream fos = new FileOutputStream(picFile, false);
-				srcPic.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		File picFile = new File(SD_Path + filePath + imageName);
+		// 图片存在，覆盖
+		try {
+			FileOutputStream fos = new FileOutputStream(picFile, false);
+			srcPic.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 
@@ -224,10 +260,10 @@ public class FileManager {
 	 * 获取文件目录
 	 */
 	public int getFileCount() {
-		
-		if(mFile.list() != null)
+
+		if (mFile.list() != null)
 			return mFile.list().length;
-		else{
+		else {
 			return 0;
 		}
 	}

@@ -1,7 +1,6 @@
 package com.loseshoe.forbirthday.util;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v4.util.LruCache;
 
 /**
@@ -61,33 +60,5 @@ public class ImageLoader {
 	public Bitmap getBitmapFromMemoryCache(String key) {
 		// TODO Auto-generated method stub
 		return mMemoryCache.get(key);
-	}
-	
-	public static int calculateInSampleSize(BitmapFactory.Options option, int reqWidth, int reqHeight){
-		//原图片的宽度
-		final int width = option.outWidth;
-		final int height = option.outHeight;
-		int inSampleSize = 1;
-		if(width > reqWidth || height > reqHeight){
-			//计算出实际宽度和目标宽度的比率
-			final int widthRatio = Math.round(((float) width/(float) reqWidth));
-			//高度比率
-			final int heightRatio = Math.round((float) height / (float) reqHeight);  
-			inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
-		}
-		return inSampleSize;
-	}
-	
-	 public static Bitmap decodeSampledBitmapFromResource(String pathName,  
-	            int reqWidth, int reqHeight) {  
-	        // 第一次解析将inJustDecodeBounds设置为true，来获取图片大小  
-	        final BitmapFactory.Options options = new BitmapFactory.Options();  
-	        options.inJustDecodeBounds = true; 
-			// 调用上面定义的方法计算inSampleSize值  
-	        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);  
-	        // 使用获取到的inSampleSize值再次解析图片  
-	        options.inJustDecodeBounds = false;  
-	        return BitmapFactory.decodeFile(pathName, options);  
-	    }  
-	
+	}	
 }

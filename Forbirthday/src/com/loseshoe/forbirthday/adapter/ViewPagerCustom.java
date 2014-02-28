@@ -1,6 +1,5 @@
 package com.loseshoe.forbirthday.adapter;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
@@ -25,25 +24,26 @@ public class ViewPagerCustom extends PagerAdapter {
 	private ImageView view;
 	private FileManager mFileManager;
 	private Bitmap bmp = null;
+	private int reqWidth;
+	private int reqHeight;
 	
-	public ViewPagerCustom(Context ctx){
+	public ViewPagerCustom(Context ctx, int reqWidth, int reqHeight){
 		this.ctx = ctx;
 		mImageLoader = ImageLoader.getInstance();
 		mFileManager = FileManager.getInstance();
-		DebugFlags.logD("++++++++++++++++");
+		this.reqHeight = reqHeight;
+		this.reqWidth = reqWidth;
 	}
 
 	@Override
 	public int getCount() {
 		// TODO Auto-generated method stub
-		DebugFlags.logD("getcount");
 		return mFileManager.getFileCount();
 	}
 
 	@Override
 	public boolean isViewFromObject(View arg0, Object arg1) {
 		// TODO Auto-generated method stub
-		DebugFlags.logD("isViewFromObject");
 		return arg0 == arg1;
 	}
 	
@@ -51,16 +51,13 @@ public class ViewPagerCustom extends PagerAdapter {
 	public void destroyItem(ViewGroup container, int position, Object object) {
 		// TODO Auto-generated method stub
 		View view = (View) object;
-		DebugFlags.logD("destroyItem");
 		container.removeView(view);
 	}
 	
 	@Override
 	public Object instantiateItem(ViewGroup container, int position) {
 		// TODO Auto-generated method stub
-		DebugFlags.logD("instantiateItem");
 		ImageView view = (ImageView)LayoutInflater.from(ctx).inflate(R.layout.pic_zoom_layout, null);
-		
 		String[] index;
 		/*
 		 * 1、首先查询是否在缓存里面
@@ -87,7 +84,8 @@ public class ViewPagerCustom extends PagerAdapter {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					bmp.recycle();
+				}else{
+					DebugFlags.logD("调用成功lurceche");
 				}
 			}else{
 				DebugFlags.logD("没有图片，请添加图片");
@@ -106,15 +104,9 @@ public class ViewPagerCustom extends PagerAdapter {
 			// TODO Auto-generated method stub
 			String imageName = params[0];
 			Bitmap bmp = null;
-			try {
-				bmp = mFileManager.getPic(imageName);
-				mImageLoader.addBitmapToMemoryCache(imageName, bmp);
-				return bmp;
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return null;
-			}
+			bmp = FileManager.decodeSampledBitmapFromResource(imageName, reqWidth, reqHeight);
+			mImageLoader.addBitmapToMemoryCache(imageName, bmp);
+			return bmp;
 		}		
 	}
 }
