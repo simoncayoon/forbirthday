@@ -171,6 +171,8 @@ public class FileManager {
 		// 第一次解析将inJustDecodeBounds设置为true，来获取图片大小
 		final BitmapFactory.Options options = new BitmapFactory.Options();
 		options.inJustDecodeBounds = true;
+		
+		BitmapFactory.decodeFile(fileUrl, options); 
 		// 调用上面定义的方法计算inSampleSize值
 		options.inSampleSize = calculateInSampleSize(options, reqWidth,
 				reqHeight);
@@ -201,6 +203,7 @@ public class FileManager {
 		// 原图片的宽度
 		final int width = option.outWidth;
 		final int height = option.outHeight;
+		option.inPreferredConfig = Bitmap.Config.RGB_565;
 		int inSampleSize = 1;
 		if (width > reqWidth || height > reqHeight) {
 			// 计算出实际宽度和目标宽度的比率
