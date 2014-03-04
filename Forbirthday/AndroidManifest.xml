@@ -29,6 +29,7 @@
         <activity android:name="com.loseshoe.forbirthday.OrderPicActivity"/>
         <activity android:name="com.loseshoe.forbirthday.EditDateActivity"/>
         <activity android:name="com.loseshoe.forbirthday.ScanPicActivity"/>
+        <activity android:name="com.loseshoe.forbirthday.BlessItemActivity"/>
     </application>
 
 </manifest>

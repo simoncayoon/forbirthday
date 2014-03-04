@@ -22,7 +22,6 @@ public class ViewPagerCustom extends PagerAdapter {
 
 	private Context ctx;
 	private ImageLoader mImageLoader;
-	private ImageView view;
 	private FileManager mFileManager;
 	private Bitmap bmp = null;
 	private int reqWidth;

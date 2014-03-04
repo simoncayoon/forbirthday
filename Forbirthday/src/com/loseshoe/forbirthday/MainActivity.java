@@ -8,8 +8,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import com.loseshoe.forbirthday.util.DebugFlags;
-
 public class MainActivity extends Activity {
 
 	private Button confBtn;
@@ -27,7 +25,6 @@ public class MainActivity extends Activity {
 		
 		Boolean pub_state = sf.getBoolean("started", false);
 		if (pub_state) {
-			DebugFlags.logD("已经在运行了");
 			Intent mIntent = new Intent(MainActivity.this,
 					ScanPicActivity.class);
 			startActivity(mIntent);
