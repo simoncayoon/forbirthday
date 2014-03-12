@@ -36,8 +36,6 @@ public class ScanPicActivity extends Activity implements OnPageChangeListener {
 		mViewPager.setCurrentItem(0);
 		mViewPager.setOnPageChangeListener(this);
 	}
-	
-	
 
 	private Runnable animateViewPager = new Runnable() {
 
@@ -45,16 +43,17 @@ public class ScanPicActivity extends Activity implements OnPageChangeListener {
 		public void run() {
 			// TODO Auto-generated method stub
 			int currentIndex = mViewPager.getCurrentItem();
-			//浏览到最后一项的时候
-			if(currentIndex == 8-1){
-				//跳转到新的页面
-				Intent mIntent = new Intent(ScanPicActivity.this, BlessItemActivity.class);
+			// 浏览到最后一项的时候
+			if (currentIndex == 8 - 1) {
+				// 跳转到新的页面
+				Intent mIntent = new Intent(ScanPicActivity.this,
+						BlessItemActivity.class);
 				startActivity(mIntent);
 				mHandler.removeCallbacks(animateViewPager);
+			} else {
+				mViewPager.setCurrentItem((currentIndex + 1) % 8, true);
+				mHandler.postDelayed(animateViewPager, ANIM_VIEWPAGER_DELAY);
 			}
-			mViewPager.setCurrentItem((currentIndex + 1) % 8,
-					true);
-			mHandler.postDelayed(animateViewPager, ANIM_VIEWPAGER_DELAY);
 		}
 	};
 
@@ -95,16 +94,14 @@ public class ScanPicActivity extends Activity implements OnPageChangeListener {
 	@Override
 	public boolean dispatchTouchEvent(MotionEvent ev) {
 		// TODO Auto-generated method stub
-		
-		if(ev.getAction() == MotionEvent.ACTION_DOWN){
+
+		if (ev.getAction() == MotionEvent.ACTION_DOWN) {
 			mHandler.removeCallbacks(animateViewPager);
 		}
-		if(ev.getAction() == MotionEvent.ACTION_UP){
+		if (ev.getAction() == MotionEvent.ACTION_UP) {
 			mHandler.postDelayed(animateViewPager, ANIM_VIEWPAGER_DELAY);
 		}
 		return super.dispatchTouchEvent(ev);
 	}
-	
-	
 
 }

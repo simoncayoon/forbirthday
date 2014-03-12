@@ -25,8 +25,11 @@ public class MainActivity extends Activity {
 		
 		Boolean pub_state = sf.getBoolean("started", false);
 		if (pub_state) {
-			Intent mIntent = new Intent(MainActivity.this,
-					ScanPicActivity.class);
+//			Intent mIntent = new Intent(MainActivity.this,
+//					ScanPicActivity.class);
+//			startActivity(mIntent);
+			//单个activity测试
+			Intent mIntent = new Intent(MainActivity.this, BlessItemActivity.class);
 			startActivity(mIntent);
 		} else {
 			confBtn = (Button) findViewById(R.id.confBtn);
@@ -34,7 +37,7 @@ public class MainActivity extends Activity {
 
 				@Override
 				public void onClick(View v) {
-					// TODO Auto-generated method stub
+					//TODO Auto-generated method stub
 					Intent intent = new Intent(MainActivity.this,
 							SetActivity.class);
 					startActivity(intent);
